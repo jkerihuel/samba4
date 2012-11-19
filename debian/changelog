@@ -1,3 +1,9 @@
+samba4 (4.0.0~rc5+dfsg1-1+zentyal2) precise; urgency=low
+
+  * Patch for heimdal API changes.
+
+ -- Samuel Cabrero <scabrero@zentyal.com>  Fri, 16 Nov 2012 01:49:47 +0100
+
 samba4 (4.0.0~rc5+dfsg1-1+zentyal1) precise; urgency=low
 
   * New upstream release
