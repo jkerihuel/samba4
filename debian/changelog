@@ -1,3 +1,10 @@
+samba4 (4.0.0~rc5+dfsg1-1+zentyal4) precise; urgency=low
+
+  * Improvements in ZAVS performance and logging. Fixed quarintinig files
+    in subfolders
+
+ -- Samuel Cabrero <scabrero@zentyal.com>  Tue, 27 Nov 2012 17:54:47 +0100
+
 samba4 (4.0.0~rc5+dfsg1-1+zentyal3) precise; urgency=low
 
   * Fix segfault in DLZ patch loading empty keys file
