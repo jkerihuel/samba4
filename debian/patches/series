@@ -1,0 +1,12 @@
+01_no_private_lib_suffix.diff
+02_torture_libnetapi
+05_share_ldb_module
+07_private_lib
+08_heimdal_config_h
+10_messaging_subsystem
+20_zentyal_dnsdb_skip_trustanchors_zone
+21_zentyal_vfs_zavs
+22_zentyal_build_vfs_zavs
+23_zentyal_ldap_privileged_socket_mode
+24_zentyal_dlz_dynamic_updates_tsig_keys
+25_zentyal_heimdal_api_changes
