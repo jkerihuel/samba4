@@ -1,7 +1,6 @@
 usr/bin/gentest
 usr/bin/locktest
 usr/bin/masktest
-usr/bin/asystest
 usr/bin/ndrdump
 usr/bin/smbtorture
 usr/share/man/man1/gentest.1

@@ -1,5 +1,4 @@
 usr/bin/cifsdd
-usr/bin/samba-dig
 usr/bin/smbclient4
 usr/bin/nmblookup4
 usr/share/man/man1/smbclient.1
