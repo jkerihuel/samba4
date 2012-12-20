@@ -1,0 +1,25 @@
+#!/bin/sh -e
+
+. /usr/share/debconf/confmodule
+
+if [ "$1" = "configure" ]; then
+	db_get samba4/server-role || true
+	SERVER_ROLE="$RET"
+	db_get samba-common/workgroup || true
+	DOMAIN="$RET"
+	db_get samba4/realm || true
+	REALM="$RET"
+
+	if [ ! -z "$2" ]; then
+		# Upgrade from previous Samba 4 installation
+		if [ -f /etc/samba/smb.conf ] && [ -f /var/lib/samba/private/sam.ldb ]; then
+			samba-tool dbcheck
+		fi
+	fi
+fi
+
+#DEBHELPER#
+
+db_stop
+
+exit 0
