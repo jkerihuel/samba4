@@ -48,7 +48,8 @@ Build-Depends: bison,
                samba-common (>= 2:3.4.0~pre2),
                subunit (>= 0.0.6),
                xsltproc,
-               zlib1g-dev (>= 1:1.2.3)
+               zlib1g-dev (>= 1:1.2.3),
+               libmagic-dev, libpcre3-dev, libclamav-dev
 Vcs-Browser: http://bzr.debian.org/lh/pkg-samba/samba4/unstable
 Vcs-Bzr: http://bzr.debian.org/pkg-samba/samba4/unstable
 DM-Upload-Allowed: yes
@@ -65,6 +66,7 @@ Depends: python,
          samba-dsdb-modules,
          samba4-common-bin (=${binary:Version}),
          tdb-tools,
+         libmagic1, libpcre3, libclamav6,
          ${misc:Depends},
          ${python:Depends},
          ${shlibs:Depends}

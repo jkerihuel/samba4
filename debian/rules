@@ -42,7 +42,8 @@ override_dh_auto_configure:
 		--builtin-libraries=replace,ccan \
 		--minimum-library-version="$(shell ./debian/autodeps.py --minimum-library-version)" \
 		--libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
-		--enable-fhs
+		--enable-fhs \
+		--enable-zavs
 
 override_dh_auto_clean:
 	-$(WAF) clean

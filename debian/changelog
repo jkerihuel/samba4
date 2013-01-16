@@ -1,7 +1,6 @@
 samba4 (4.0.1+dfsg1-1+zentyal1) precise; urgency=low
 
   * New upstream release
-  * Drop ZAVS VFS plugin
   * scannedonly: Fix bug #9534 and send user and client IP over socket
                  along with file path
 
