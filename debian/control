@@ -163,9 +163,9 @@ Package: samba4-clients
 Architecture: any
 Depends: samba4-common-bin (=${binary:Version}),
          ${misc:Depends},
-         ${shlibs:Depends},
-         smbclient
-Conflicts: samba-common (<< 2:3.3.0~rc2-5)
+         ${shlibs:Depends}
+Conflicts: samba-common (<< 2:3.3.0~rc2-5), samba-clients
+Replaces: samba-clients
 Description: client utilities from Samba 4
  Samba is an implementation of the SMB/CIFS protocol for Unix systems,
  providing support for cross-platform file sharing with Microsoft Windows, OS X,

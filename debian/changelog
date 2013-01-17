@@ -1,3 +1,15 @@
+samba4 (4.0.1+dfsg1-1+zentyal3) precise; urgency=low
+
+  * Fix samba4-clients package wrong dependence
+
+ -- Samuel Cabrero <scabrero@zentyal.com>  Thu, 17 Jan 2013 11:51:40 +0100
+
+samba4 (4.0.1+dfsg1-1+zentyal2) precise; urgency=low
+
+  * Split scannedonly patch
+
+ -- Samuel Cabrero <scabrero@zentyal.com>  Wed, 16 Jan 2013 18:33:58 +0100
+
 samba4 (4.0.1+dfsg1-1+zentyal1) precise; urgency=low
 
   * New upstream release
