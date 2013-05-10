@@ -69,6 +69,53 @@ static NTSTATUS authsam_search_account(TALLOC_CTX *mem_ctx, struct ldb_context *
 }
 
 /****************************************************************************
+ Look for the guest account in the sam, return ldb result structures
+****************************************************************************/
+
+static NTSTATUS authsam_search_guest_account(TALLOC_CTX *mem_ctx, struct ldb_context *sam_ctx,
+				       struct ldb_dn *domain_dn,
+				       struct ldb_message **ret_msg)
+{
+	int ret;
+    const struct dom_sid *domain_sid;
+    struct dom_sid *guest_sid;
+
+	domain_sid = samdb_domain_sid(sam_ctx);
+	if (domain_sid == NULL) {
+		return NT_STATUS_INTERNAL_DB_CORRUPTION;
+	}
+
+	guest_sid = dom_sid_add_rid(mem_ctx, domain_sid, DOMAIN_RID_GUEST);
+	if (guest_sid == NULL) {
+		return NT_STATUS_INTERNAL_DB_CORRUPTION;
+	}
+
+	/* pull the user attributes */
+	ret = dsdb_search_one(sam_ctx, mem_ctx, ret_msg, domain_dn, LDB_SCOPE_SUBTREE,
+			      user_attrs,
+			      DSDB_SEARCH_SHOW_EXTENDED_DN,
+			      "(&(objectSID=%s)(objectclass=user))",
+                  ldap_encode_ndr_dom_sid(mem_ctx, guest_sid));
+	if (ret == LDB_ERR_NO_SUCH_OBJECT) {
+		DEBUG(3,("%s: Couldn't guest user in samdb, under %s\n", __func__,
+			 ldb_dn_get_linearized(domain_dn)));
+		return NT_STATUS_NO_SUCH_USER;
+	}
+	if (ret != LDB_SUCCESS) {
+		return NT_STATUS_INTERNAL_DB_CORRUPTION;
+	}
+
+	/* Return no such user if the account is disabled */
+	uint16_t acct_flags = samdb_result_acct_flags(sam_ctx, mem_ctx, *ret_msg, domain_dn);
+	if (acct_flags & ACB_DISABLED) {
+		DEBUG(3,("%s: Account for guest user is disabled.\n", __func__));
+		return NT_STATUS_NO_SUCH_USER;
+	}
+
+	return NT_STATUS_OK;
+}
+
+/****************************************************************************
  Do a specific test for an smb password being correct, given a smb_password and
  the lanman and NT responses.
 ****************************************************************************/
@@ -270,14 +317,23 @@ static NTSTATUS authsam_check_password_internals(struct auth_method_context *ctx
 	}
 
 	nt_status = authsam_search_account(tmp_ctx, ctx->auth_ctx->sam_ctx, account_name, domain_dn, &msg);
-	if (!NT_STATUS_IS_OK(nt_status)) {
-		talloc_free(tmp_ctx);
-		return nt_status;
-	}
-
-	nt_status = authsam_authenticate(ctx->auth_ctx, tmp_ctx, ctx->auth_ctx->sam_ctx, domain_dn, msg, user_info,
-					 &user_sess_key, &lm_sess_key);
-	if (!NT_STATUS_IS_OK(nt_status)) {
+    if (NT_STATUS_IS_OK(nt_status)) {
+    	nt_status = authsam_authenticate(ctx->auth_ctx, tmp_ctx, ctx->auth_ctx->sam_ctx, domain_dn, msg, user_info,
+	    				 &user_sess_key, &lm_sess_key);
+    	if (!NT_STATUS_IS_OK(nt_status)) {
+	    	talloc_free(tmp_ctx);
+		    return nt_status;
+    	}
+    } else if (NT_STATUS_EQUAL(nt_status, NT_STATUS_NO_SUCH_USER)) {
+        DEBUG(3, ("%s: User %s not found, mapping to guest account\n", __func__, account_name));
+        nt_status = authsam_search_guest_account(tmp_ctx, ctx->auth_ctx->sam_ctx, domain_dn, &msg);
+    	if (!NT_STATUS_IS_OK(nt_status)) {
+	    	talloc_free(tmp_ctx);
+		    return nt_status;
+    	}
+        user_sess_key = data_blob(NULL, 0);
+        lm_sess_key = data_blob(NULL, 0);
+    } else {
 		talloc_free(tmp_ctx);
 		return nt_status;
 	}
