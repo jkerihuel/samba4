@@ -199,6 +199,10 @@ static const struct flag_map ace_access_mask[] = {
 	{ "GR", SEC_GENERIC_READ },
 	{ "GW", SEC_GENERIC_WRITE },
 	{ "GX", SEC_GENERIC_EXECUTE },
+	{ "FA", SEC_RIGHTS_FILE_ALL },
+	{ "FR", SEC_RIGHTS_FILE_READ },
+	{ "FW", SEC_RIGHTS_FILE_WRITE },
+	{ "FX", SEC_RIGHTS_FILE_EXECUTE },
 	{ NULL, 0 }
 };
 

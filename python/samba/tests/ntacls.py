@@ -29,7 +29,7 @@ class NtaclsTests(TestCaseInTempDir):
 
     def test_setntacl(self):
         lp = LoadParm()
-        acl = "O:S-1-5-21-2212615479-2695158682-2101375467-512G:S-1-5-21-2212615479-2695158682-2101375467-513D:(A;OICI;0x001f01ff;;;S-1-5-21-2212615479-2695158682-2101375467-512)"
+        acl = "O:S-1-5-21-2212615479-2695158682-2101375467-512G:S-1-5-21-2212615479-2695158682-2101375467-513D:(A;OICI;FA;;;S-1-5-21-2212615479-2695158682-2101375467-512)"
         open(self.tempf, 'w').write("empty")
         lp.set("posix:eadb",os.path.join(self.tempdir,"eadbtest.tdb"))
         setntacl(lp, self.tempf, acl, "S-1-5-21-2212615479-2695158682-2101375467")
@@ -37,7 +37,7 @@ class NtaclsTests(TestCaseInTempDir):
 
     def test_setntacl_getntacl(self):
         lp = LoadParm()
-        acl = "O:S-1-5-21-2212615479-2695158682-2101375467-512G:S-1-5-21-2212615479-2695158682-2101375467-513D:(A;OICI;0x001f01ff;;;S-1-5-21-2212615479-2695158682-2101375467-512)"
+        acl = "O:S-1-5-21-2212615479-2695158682-2101375467-512G:S-1-5-21-2212615479-2695158682-2101375467-513D:(A;OICI;FA;;;S-1-5-21-2212615479-2695158682-2101375467-512)"
         open(self.tempf, 'w').write("empty")
         lp.set("posix:eadb",os.path.join(self.tempdir,"eadbtest.tdb"))
         setntacl(lp,self.tempf,acl,"S-1-5-21-2212615479-2695158682-2101375467")
@@ -48,7 +48,7 @@ class NtaclsTests(TestCaseInTempDir):
 
     def test_setntacl_getntacl_param(self):
         lp = LoadParm()
-        acl = "O:S-1-5-21-2212615479-2695158682-2101375467-512G:S-1-5-21-2212615479-2695158682-2101375467-513D:(A;OICI;0x001f01ff;;;S-1-5-21-2212615479-2695158682-2101375467-512)"
+        acl = "O:S-1-5-21-2212615479-2695158682-2101375467-512G:S-1-5-21-2212615479-2695158682-2101375467-513D:(A;OICI;FA;;;S-1-5-21-2212615479-2695158682-2101375467-512)"
         open(self.tempf, 'w').write("empty")
         setntacl(lp,self.tempf,acl,"S-1-5-21-2212615479-2695158682-2101375467","tdb",os.path.join(self.tempdir,"eadbtest.tdb"))
         facl=getntacl(lp,self.tempf,"tdb",os.path.join(self.tempdir,"eadbtest.tdb"))
@@ -58,7 +58,7 @@ class NtaclsTests(TestCaseInTempDir):
 
     def test_setntacl_invalidbackend(self):
         lp = LoadParm()
-        acl = "O:S-1-5-21-2212615479-2695158682-2101375467-512G:S-1-5-21-2212615479-2695158682-2101375467-513D:(A;OICI;0x001f01ff;;;S-1-5-21-2212615479-2695158682-2101375467-512)"
+        acl = "O:S-1-5-21-2212615479-2695158682-2101375467-512G:S-1-5-21-2212615479-2695158682-2101375467-513D:(A;OICI;FA;;;S-1-5-21-2212615479-2695158682-2101375467-512)"
         open(self.tempf, 'w').write("empty")
         self.assertRaises(XattrBackendError, setntacl, lp, self.tempf, acl, "S-1-5-21-2212615479-2695158682-2101375467","ttdb", os.path.join(self.tempdir,"eadbtest.tdb"))
 
@@ -66,7 +66,7 @@ class NtaclsTests(TestCaseInTempDir):
         if os.getuid() == 0:
             raise TestSkipped("Running test as root, test skipped")
         lp = LoadParm()
-        acl = "O:S-1-5-21-2212615479-2695158682-2101375467-512G:S-1-5-21-2212615479-2695158682-2101375467-513D:(A;OICI;0x001f01ff;;;S-1-5-21-2212615479-2695158682-2101375467-512)"
+        acl = "O:S-1-5-21-2212615479-2695158682-2101375467-512G:S-1-5-21-2212615479-2695158682-2101375467-513D:(A;OICI;FA;;;S-1-5-21-2212615479-2695158682-2101375467-512)"
         open(self.tempf, 'w').write("empty")
         lp.set("posix:eadb", os.path.join(self.tempdir,"eadbtest.tdb"))
         self.assertRaises(Exception, setntacl, lp, self.tempf ,acl,
