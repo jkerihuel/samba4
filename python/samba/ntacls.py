@@ -84,7 +84,7 @@ def getntacl(lp, file, backend=None, eadbfile=None, direct_db_access=True):
         return smbd.get_nt_acl(file, security.SECINFO_OWNER | security.SECINFO_GROUP | security.SECINFO_DACL | security.SECINFO_SACL)
 
 
-def setntacl(lp, file, sddl, domsid, backend=None, eadbfile=None, use_ntvfs=True, skip_invalid_chown=False, passdb=None):
+def setntacl(lp, file, sddl, domsid, backend=None, eadbfile=None, use_ntvfs=True, skip_invalid_chown=False, passdb=None, recursive=False):
     assert(isinstance(domsid, str) or isinstance(domsid, security.dom_sid))
     if isinstance(domsid, str):
         sid = security.dom_sid(domsid)
@@ -117,7 +117,7 @@ def setntacl(lp, file, sddl, domsid, backend=None, eadbfile=None, use_ntvfs=True
                     sd2 = sd
                     sd2.owner_sid = administrator
 
-                    smbd.set_nt_acl(file, security.SECINFO_OWNER |security.SECINFO_GROUP | security.SECINFO_DACL | security.SECINFO_SACL, sd2)
+                    setsmbntacl(file, security.SECINFO_OWNER | security.SECINFO_GROUP | security.SECINFO_DACL | security.SECINFO_SACL, sd2, recursive)
 
                     # and then set an NTVFS ACL (which does not set the posix ACL) to pretend the owner really was set
                     use_ntvfs = True
@@ -130,7 +130,7 @@ def setntacl(lp, file, sddl, domsid, backend=None, eadbfile=None, use_ntvfs=True
                 # This won't work in test environments, as it tries a real (rather than xattr-based fake) chown
 
                 os.chown(file, 0, 0)
-                smbd.set_nt_acl(file, security.SECINFO_GROUP | security.SECINFO_DACL | security.SECINFO_SACL, sd)
+                setsmbntacl(file, security.SECINFO_GROUP | security.SECINFO_DACL | security.SECINFO_SACL, sd, recursive)
 
     if use_ntvfs:
         (backend_obj, dbname) = checkset_backend(lp, backend, eadbfile)
@@ -139,19 +139,67 @@ def setntacl(lp, file, sddl, domsid, backend=None, eadbfile=None, use_ntvfs=True
         ntacl.info = sd
         if dbname is not None:
             try:
-                backend_obj.wrap_setxattr(dbname,
-                                          file, xattr.XATTR_NTACL_NAME, ndr_pack(ntacl))
+                setntvfsdbntacl(backend_obj, dbname, file, ntacl, recursive)
             except Exception:
                 # FIXME: Don't catch all exceptions, just those related to opening
                 # xattrdb
                 print "Fail to open %s" % dbname
-                samba.xattr_native.wrap_setxattr(file, xattr.XATTR_NTACL_NAME,
-                                                 ndr_pack(ntacl))
+                setntvfsntacl(file, ntacl, recursive)
         else:
-            samba.xattr_native.wrap_setxattr(file, xattr.XATTR_NTACL_NAME,
-                                             ndr_pack(ntacl))
+            setntvfsntacl(file, ntacl, recursive)
     else:
-        smbd.set_nt_acl(file, security.SECINFO_OWNER | security.SECINFO_GROUP | security.SECINFO_DACL | security.SECINFO_SACL, sd)
+        setsmbntacl(file, security.SECINFO_OWNER | security.SECINFO_GROUP | security.SECINFO_DACL | security.SECINFO_SACL, sd, recursive)
+
+
+def setntvfsdbntacl(backend_obj, dbname, path, ntacl, recursive):
+    if recursive:
+        if os.path.isdir(path):
+            backend_obj.wrap_setxattr(dbname, path, xattr.XATTR_NTACL_NAME, ndr_pack(ntacl))
+            for root, subfolders, files in os.walk(path):
+                for folder in subfolders:
+                    folder_path = os.path.join(root, folder)
+                    backend_obj.wrap_setxattr(dbname, folder_path, xattr.XATTR_NTACL_NAME, ndr_pack(ntacl))
+                for filename in files:
+                    file_path = os.path.join(root, filename)
+                    backend_obj.wrap_setxattr(dbname, file_path, xattr.XATTR_NTACL_NAME, ndr_pack(ntacl))
+        else:
+            raise CommandError("Recursive flag set but specified file is not a directory")
+    else:
+        backend_obj.wrap_setxattr(dbname, path, xattr.XATTR_NTACL_NAME, ndr_pack(ntacl))
+
+
+def setntvfsntacl(path, ntacl, recursive):
+    if recursive:
+        if os.path.isdir(path):
+            samba.xattr_native.wrap_setxattr(path, xattr.XATTR_NTACL_NAME, ndr_pack(ntacl))
+            for root, subfolders, files in os.walk(path):
+                for folder in subfolders:
+                    folder_path = os.path.join(root, folder)
+                    samba.xattr_native.wrap_setxattr(folder_path, xattr.XATTR_NTACL_NAME, ndr_pack(ntacl))
+                for filename in files:
+                    file_path = os.path.join(root, filename)
+                    samba.xattr_native.wrap_setxattr(file_path, xattr.XATTR_NTACL_NAME, ndr_pack(ntacl))
+        else:
+            raise CommandError("Recursive flag set but specified file is not a directory")
+    else:
+        samba.xattr_native.wrap_setxattr(path, xattr.XATTR_NTACL_NAME, ndr_pack(ntacl))
+
+
+def setsmbntacl(path, flags, sd, recursive):
+    if recursive:
+        if os.path.isdir(path):
+            smbd.set_nt_acl(path, flags, sd)
+            for root, subfolders, files in os.walk(path):
+                for folder in subfolders:
+                    folder_path = os.path.join(root, folder)
+                    smbd.set_nt_acl(folder_path, flags, sd)
+                for filename in files:
+                    file_path = os.path.join(root, filename)
+                    smbd.set_nt_acl(file_path, flags, sd)
+        else:
+            raise CommandError("Recursive flag set but specified file is not a directory")
+    else:
+        smbd.set_nt_acl(path, flags, sd)
 
 
 def ldapmask2filemask(ldm):

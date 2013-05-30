@@ -56,14 +56,16 @@ class cmd_ntacl_set(Command):
                choices=["native","tdb"]),
         Option("--eadb-file", help="Name of the tdb file where attributes are stored", type="string"),
         Option("--use-ntvfs", help="Set the ACLs directly to the TDB or xattr for use with the ntvfs file server", action="store_true"),
-        Option("--use-s3fs", help="Set the ACLs for use with the default s3fs file server via the VFS layer", action="store_true")
+        Option("--use-s3fs", help="Set the ACLs for use with the default s3fs file server via the VFS layer", action="store_true"),
+        Option("--recursive", help="Set the ACLs recursively on all files and folders under the specified directory", action="store_true"),
         ]
 
     takes_args = ["acl","file"]
 
     def run(self, acl, file, use_ntvfs=False, use_s3fs=False,
             quiet=False,xattr_backend=None,eadb_file=None,
-            credopts=None, sambaopts=None, versionopts=None):
+            credopts=None, sambaopts=None, versionopts=None,
+            recursive=False):
         logger = self.get_logger()
         lp = sambaopts.get_loadparm()
         try:
@@ -87,7 +89,7 @@ class cmd_ntacl_set(Command):
         # ensure we are using the right samba_dsdb passdb backend, no matter what
         s3conf.set("passdb backend", "samba_dsdb:%s" % samdb.url)
 
-        setntacl(lp, file, acl, str(domain_sid), xattr_backend, eadb_file, use_ntvfs=use_ntvfs)
+        setntacl(lp, file, acl, str(domain_sid), xattr_backend, eadb_file, use_ntvfs=use_ntvfs, recursive=recursive)
 
         if use_ntvfs:
             logger.warning("Please note that POSIX permissions have NOT been changed, only the stored NT ACL")
